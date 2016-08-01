@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Mirror by another-guy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Mirror</h1>
+      <h2 class="project-tagline"></h2>
+      <a href="https://github.com/another-guy/Mirror" class="btn">View on GitHub</a>
+      <a href="https://github.com/another-guy/Mirror/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/another-guy/Mirror/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h2>
+<a id="synopsis" class="anchor" href="#synopsis" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Synopsis</h2>
+
+<p>Simplifies C# reflection code.</p>
+
+<h2>
+<a id="code-example" class="anchor" href="#code-example" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Code Example</h2>
+
+<h3>
+<a id="describing-the-target" class="anchor" href="#describing-the-target" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Describing the target</h3>
+
+<p>To access or invoke a private method that is defined on a <code>type</code> or an <code>object</code> client code needs to specify the target correctly.
+Targets' members can be either static or instance.
+Notice that <code>constructors</code> must be accessed through a <strong>static</strong> target since no <strong>instance target</strong> is available yet:</p>
+
+<div class="highlight highlight-source-cs"><pre><span class="pl-k">class</span> <span class="pl-en">MyClass</span> {
+  <span class="pl-k">private</span> <span class="pl-k">string</span> name;
+  <span class="pl-k">private</span> <span class="pl-en">MyClass</span>() { <span class="pl-c1">this</span>.name = <span class="pl-s"><span class="pl-pds">"</span>Name is not set<span class="pl-pds">"</span></span>; }
+  <span class="pl-k">private</span> <span class="pl-en">MyClass</span>(<span class="pl-k">string</span> <span class="pl-smi">name</span>) { <span class="pl-c1">this</span>.name = name; }
+}
+
+MyClass targetObject = ...;
+
+<span class="pl-k">var</span> staticTarget = Use.Target&lt;MyClass&gt;();
+<span class="pl-c">// staticTarget can now be used to call constructor or</span>
+<span class="pl-c">// call or access static members</span>
+
+<span class="pl-k">var</span> instanceTarget = Use.Target(targetObject)
+<span class="pl-c">// instanceTarget can now be used to call or access targetObject's members</span></pre></div>
+
+<h3>
+<a id="creating-an-instance-of-an-object" class="anchor" href="#creating-an-instance-of-an-object" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Creating an instance of an object</h3>
+
+<div class="highlight highlight-source-cs"><pre><span class="pl-c">// Creates object by calling it's default constructor</span>
+MyClass newInstance = Use.Target&lt;MyClass&gt;().ToCreateInstance();
+
+<span class="pl-c">// Creates object by calling it's best matching parameterized constructor</span>
+MyClass newInstance = Use.Target&lt;MyClass&gt;().ToCreateInstance(<span class="pl-s"><span class="pl-pds">"</span>Alice<span class="pl-pds">"</span></span>);</pre></div>
+
+<h3>
+<a id="working-with-instance-members" class="anchor" href="#working-with-instance-members" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Working with instance members</h3>
+
+<div class="highlight highlight-source-cs"><pre><span class="pl-k">class</span> <span class="pl-en">MyClass</span> {
+  <span class="pl-k">private</span> <span class="pl-k">string</span> name;
+  <span class="pl-k">private</span> <span class="pl-k">string</span> <span class="pl-en">Name</span> { <span class="pl-k">get</span> { <span class="pl-k">return</span> name; } <span class="pl-k">set</span> { name = <span class="pl-k">value</span> } }
+  <span class="pl-k">private</span> <span class="pl-k">void</span> <span class="pl-en">SetName</span>(<span class="pl-k">string</span> <span class="pl-smi">newName</span>) { name = newName; }
+  <span class="pl-k">private</span> <span class="pl-k">string</span> <span class="pl-en">GetName</span>() { <span class="pl-k">return</span> name; }
+}
+MyClass target = <span class="pl-k">new</span> MyClass();
+
+<span class="pl-c">// Field/Property access code looks similar</span>
+Use.Target(target).ToSet(<span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span>).Value(<span class="pl-s"><span class="pl-pds">"</span>Bob<span class="pl-pds">"</span></span>)
+Use.Target(target).ToSet(<span class="pl-s"><span class="pl-pds">"</span>Name<span class="pl-pds">"</span></span>).Value(<span class="pl-s"><span class="pl-pds">"</span>Chris<span class="pl-pds">"</span></span>)
+<span class="pl-k">string</span> nameFromField = Use.Target(target).ToGet&lt;<span class="pl-k">string</span>&gt;(<span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span>);
+<span class="pl-k">string</span> nameFromProperty = Use.Target(target).ToGet&lt;<span class="pl-k">string</span>&gt;(<span class="pl-s"><span class="pl-pds">"</span>Name<span class="pl-pds">"</span></span>);
+
+<span class="pl-c">// Method access</span>
+Use.Target(target).ToCall(<span class="pl-s"><span class="pl-pds">"</span>SetName<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>David<span class="pl-pds">"</span></span>);
+<span class="pl-k">string</span> nameFromMethod = Use.Target(target).ToCall&lt;<span class="pl-k">string</span>&gt;(<span class="pl-s"><span class="pl-pds">"</span>GetName<span class="pl-pds">"</span></span>);</pre></div>
+
+<h3>
+<a id="working-with-static-members" class="anchor" href="#working-with-static-members" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Working with static members</h3>
+
+<div class="highlight highlight-source-cs"><pre><span class="pl-k">static</span> <span class="pl-k">class</span> <span class="pl-en">MyClass</span> {
+  <span class="pl-k">private</span> <span class="pl-k">static</span> <span class="pl-k">string</span> name;
+  <span class="pl-k">private</span> <span class="pl-k">static</span> <span class="pl-k">string</span> <span class="pl-en">Name</span> { <span class="pl-k">get</span> { <span class="pl-k">return</span> name; } <span class="pl-k">set</span> { name = <span class="pl-k">value</span> } }
+  <span class="pl-k">private</span> <span class="pl-k">static</span> <span class="pl-k">void</span> <span class="pl-en">SetName</span>(<span class="pl-k">string</span> <span class="pl-smi">newName</span>) { name = newName; }
+  <span class="pl-k">private</span> <span class="pl-k">static</span> <span class="pl-k">string</span> <span class="pl-en">GetName</span>() { <span class="pl-k">return</span> name; }
+}
+
+Use.Target&lt;MyClass&gt;().ToSet(<span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span>).Value(<span class="pl-s"><span class="pl-pds">"</span>Bob<span class="pl-pds">"</span></span>)
+<span class="pl-k">string</span> nameFromStaticField = Use.Target&lt;MyClass&gt;().ToGet&lt;<span class="pl-k">string</span>&gt;(<span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span>);
+
+Use.Target&lt;MyClass&gt;().ToSet(<span class="pl-s"><span class="pl-pds">"</span>Name<span class="pl-pds">"</span></span>).Value(<span class="pl-s"><span class="pl-pds">"</span>Chris<span class="pl-pds">"</span></span>)
+<span class="pl-k">string</span> nameFromStaticProperty = Use.Target&lt;MyClass&gt;().ToGet&lt;<span class="pl-k">string</span>&gt;(<span class="pl-s"><span class="pl-pds">"</span>Name<span class="pl-pds">"</span></span>);
+
+Use.Target&lt;MyClass&gt;().ToCall(<span class="pl-s"><span class="pl-pds">"</span>SetName<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>David<span class="pl-pds">"</span></span>);
+<span class="pl-k">string</span> nameFromStaticMethod = Use.Target&lt;MyClass&gt;().ToCall&lt;<span class="pl-k">string</span>&gt;(<span class="pl-s"><span class="pl-pds">"</span>GetName<span class="pl-pds">"</span></span>);</pre></div>
+
+<h2>
+<a id="motivation" class="anchor" href="#motivation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Motivation</h2>
+
+<p>Syntax sugar is syntax sugar: it's not a necessary thing per se but it can improve code quality.
+Reflection should be your last resort tool when used in production code:
+types very often limit constructor and other members' accessibility level on purpose.</p>
+
+<p>In your tests, however, it may be okay to have slightly sloppier code.
+For example, you may want to build a dummy/fake object and for some reason mocking tools like NSubstitute can't do it.</p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Mirror is a available in a form of a NuGet package.
+Follow regular installation process to bring it to your project.
+<a href="https://www.nuget.org/packages/Mirror/">https://www.nuget.org/packages/Mirror/</a></p>
+
+<h2>
+<a id="tests" class="anchor" href="#tests" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Tests</h2>
+
+<p>Unit tests are available in Mirror.Tests project.</p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+
+<p>The code is distributed under the MIT license.</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/another-guy/Mirror">Mirror</a> is maintained by <a href="https://github.com/another-guy">another-guy</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
